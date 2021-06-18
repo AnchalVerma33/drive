@@ -29,3 +29,5 @@ const deleteFile=async(req,res)=>{
         
     }
 }
+
+module.exports={createFile,copyFile,moveFile,deleteFile}
