@@ -16,7 +16,11 @@ if(process.env.NODE_ENV==='development'){
 }
 
 const userRoutes=require('./src/routes/userRoutes')
-app.use('/api/users',userRoutes)
+const fileRoutes=require('./src/routes/fileRoutes')
+const folderRoutes=require('./src/routes/folderRoutes')
 
+app.use('/api/users',userRoutes)
+app.use('/api/files',fileRoutes)
+app.use('/api/folders',folderRoutes)
 
 app.listen(PORT,()=>{console.log(`Server running on the port ${PORT}`.yellow)})
