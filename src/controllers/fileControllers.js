@@ -1,21 +1,20 @@
-import File from '../models/fileModel'
-import Folder from '../models/folderModel'  
+const File=require('../models/fileModel')
+const Folder=require('../models/folderModel')
 
 const createFile=async(req,res)=>{
     try{
         const { name, link, parentFolder} = req.body
         const user = req.user._id
-        console.log(user)
         const file = await File.create({ name,link,parentFolder,user })
         /* Finding Parent Folder and pushing file to Child Files Array */
         const folder = await Folder.findById(parentFolder)
         const prevArray = folder.childFiles
         const newFile = {
-            File: file._id
+            name:file.name,
+            file:file._id
         }
         const newArray = [...prevArray,newFile]
         const updatedFolder = await Folder.findByIdAndUpdate(parentFolder,{childFiles: newArray})
-        console.log(updatedFolder)
         return res.status(201).json({
             success: true,
             data: file

@@ -12,16 +12,28 @@ const FolderSchema=mongoose.Schema({
     },
     childFolder:[
         {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: 'Folder',
+            name:{
+                type:String,
+                required:true
+            },
+            file:{
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                ref: 'Folder',
+            }
         }
     ],
     childFiles:[
         {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: 'File',
+            name:{
+                type:String,
+                required:true
+            },
+            file:{
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                ref: 'File',
+            }
         }
     ],
     user:{
