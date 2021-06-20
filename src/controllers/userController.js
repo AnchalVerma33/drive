@@ -1,4 +1,5 @@
 const User =require('../models/userModel')
+const Folder=require('../models/folderModel')
 const generateToken = require('../utils/generateToken')
 
 const authUser = async (req, res) => {
@@ -37,6 +38,17 @@ const registerUser =async (req, res) => {
                 password,
             })
             if(user){
+                const headFolder=await Folder.create({
+                    parentFolder:user._id,
+                    name:'Parent',
+                    childFolder:[],
+                    childFiles:[],
+                    user:user._id
+                })
+                if(!headFolder){
+                    await User.findByIdAndDelete(user._id)
+                    throw new Error('Parent Folder cant be created')
+                }
                 res.status(201).json({success:true,message:'Successfully Registered',data:{_id: user._id,name: user.name,email: user.email,token: generateToken(user._id)}})
             }else{
                 throw new Error('Invalid user data')
