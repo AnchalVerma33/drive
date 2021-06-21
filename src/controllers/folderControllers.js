@@ -51,54 +51,48 @@ const createFolder=async(req,res)=>{
 
 const copyFolder=async(req,res)=>{
     try {
-        // Need To Pass the folder Id where you want to copy your file
-        const destinationFolderId = req.body.parentFolder
-        const user = req.user._id
-        const folderId = req.params.id
-        const folder = await Folder.findById(folderId)
-        // finding folder where to copy file
-        const destinationFolder = await Folder.findById(destinationFolderId)
-        const prevArray = destinationFolder.childFolder
+        const folderToBeCopyId=req.params.id
+        const destinationParentFolderId=req.body.parentFolder
+        const folderTobeCopy=await Folder.findById(folderToBeCopyId)
+        const destinationParentFolder=await Folder.findById(destinationParentFolderId)
+
         let flag=0
-        prevArray.forEach(element => {
-            if(element.name===folder.name)
+        destinationParentFolder.childFolder.forEach(folder => {
+            if(folder.name===folderTobeCopy.name)
                 flag=1
-        });
+        })
         if(flag){
             return res.status(400).json({
                 status: false,
-                message: 'Folder with that name already exists'
+                message: 'Folder  with that name already exists'
             })
         }else{
-            const newFolder=await File.create({
-                name:file.name,
-                link:file.link,
-                parentFolder:folderId,
-                user:user,
-                childFolder:folder.childFolder,
-                childFiles:folder.childFiles
-            })
-            const newFolderItem = {
-                name: newFolder.name,
-                folder: newFolder._id
+
+            let obj={
+                name:folderTobeCopy.name,
+                user:folderTobeCopy.user,
+                childFolder:folderTobeCopy.childFolder,
+                childFiles:folderTobeCopy.childFiles,
+                parentFolder:destinationParentFolderId,
             }
-            const newArray = [...prevArray, newFolderItem]
-            const updatedFolder = await Folder.findByIdAndUpdate(folderId, { childFiles: newArray })
+            const newFolder=await Folder.create(obj)
+            const childFolder=destinationParentFolder.childFolder
+            await Folder.findByIdAndUpdate(destinationParentFolderId,{childFolder:[...childFolder,{name:folderTobeCopy.name,folder:folderToBeCopyId}]})
             return res.status(201).json({
                 success: true,
-                data: newFile
+                data:newFolder
             })
         }
     } catch (e) {
         if (e.name === 'ValidationError') {
-            console.log(e)
+            // console.log(e)
             const messages = Object.values(e.errors).map(val => val.message)
             res.status(400).json({
                 success: false,
                 error: messages
             })
         } else {
-            console.log(`Error occured ${e}`)
+            // console.log(`Error occured ${e}`)
             return res.status(500).json({
                 success: false,
                 error: `${e}`
@@ -109,9 +103,53 @@ const copyFolder=async(req,res)=>{
 
 const moveFolder=async(req,res)=>{
     try{
+        const folderTobeMovedId=req.params.id
+        const destinationParentFolderId=req.body.parentFolder
+        const folderToBeMoved=await Folder.findById(folderTobeMovedId)
+        const destinationParentFolder=await Folder.findById(destinationParentFolderId)
+        const currentParentFolder=await Folder.findById(folderToBeMoved.parentFolder)
+
+        let flag=0
+        destinationParentFolder.childFolder.forEach(folder => {
+            if(folder.name===folderToBeMoved.name)
+                flag=1
+        })
+        if(flag){
+            return res.status(400).json({
+                status: false,
+                message: 'Folder  with that name already exists'
+            })
+        }else{
+            const newCurrentParentFolderArray=currentParentFolder.childFolder.filter((obj)=>String(obj.folder)!==String(folderTobeMovedId))
+
+            const childFolder=destinationParentFolder.childFolder
+
+            await Folder.findByIdAndUpdate(destinationParentFolderId,{childFolder:[...childFolder,{name:folderToBeMoved.name,folder:folderTobeMovedId}]})
+
+            const oldParentFolder=await Folder.findByIdAndUpdate(folderToBeMoved.parentFolder,{childFolder:newCurrentParentFolderArray})
+            const file=await Folder.findByIdAndUpdate(req.params.id,{parentFolder:destinationParentFolderId})
+            return res.status(201).json({
+                success: true,
+                data:file
+            })
+        }
 
     }catch(e){
-        
+        if (e.name === 'ValidationError') {
+            console.log(e)
+            const messages = Object.values(e.errors).map(val => val.message)
+            res.status(400).json({
+                success: false,
+                error: messages
+            })
+
+        } else {
+            console.log(`Error occured ${e}`)
+            return res.status(500).json({
+                success: false,
+                error: `${e}`
+            })
+        }
     }
 }
 

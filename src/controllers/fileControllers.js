@@ -125,38 +125,47 @@ const moveFile = async (req, res) => {
         const moveFileName = file.name
         // =======================================================================
         // Parent Folder of File
-        const parentFolder = file.parentFolder
-        const folder = await Folder.findById(parentFolder)
+        
+        const folder = await Folder.findById(folderId)
         const childFiles = folder.childFiles
-        // for (let i = 0; i < childFiles.length; i++){
-        //     if (childFiles[i].File == moveFileId) {
-        //         childFiles.splice(i, 1)
-        //         break;
-        //     }
-        // }
-        const newChildFiles=childFiles.filter((obj)=>{
-            console.log(typeof String(obj.file))
-            console.log(typeof String(fileId))
-            return String(obj.file)!==String(fileId)})
-        // Now Update ParentFolder
-        const updatedParent = await Folder.findByIdAndUpdate(parentFolder,{childFiles: newChildFiles})
-        // =====================================================================
-        // Move File Logic
-        // Now Move File To New Folder's Child Array
-        const newFolder = await Folder.findById(folderId)
-        const prevFiles = newFolder.childFiles
-        const newFile = {
-            name: moveFileName,
-            file: moveFileId
+        let flag=0
+        childFiles.forEach(element => {
+            if(element.name===file.name)
+                flag=1
+        });
+        if(flag){
+            return res.status(400).json({
+                status: false,
+                message: 'File with that name already exists'
+            })
         }
-        const updatedFiles = [...prevFiles, newFile]
-        // Now make an update
-        const updatedFolder = await Folder.findByIdAndUpdate(folderId,{childFiles: updatedFiles})
-        const movedFile=await File.findByIdAndUpdate(fileId,{parentFolder:updatedFolder._id})
-        return res.status(201).json({
-            success: true,
-            data: movedFile
-        })
+        else{
+            const parentFolder = file.parentFolder
+            
+            const newChildFiles=childFiles.filter((obj)=>{
+                console.log(typeof String(obj.file))
+                console.log(typeof String(fileId))
+                return String(obj.file)!==String(fileId)})
+            // Now Update ParentFolder
+            const updatedParent = await Folder.findByIdAndUpdate(parentFolder,{childFiles: newChildFiles})
+            // =====================================================================
+            // Move File Logic
+            // Now Move File To New Folder's Child Array
+            const newFolder = await Folder.findById(folderId)
+            const prevFiles = newFolder.childFiles
+            const newFile = {
+                name: moveFileName,
+                file: moveFileId
+            }
+            const updatedFiles = [...prevFiles, newFile]
+            // Now make an update
+            const updatedFolder = await Folder.findByIdAndUpdate(folderId,{childFiles: updatedFiles})
+            const movedFile=await File.findByIdAndUpdate(fileId,{parentFolder:updatedFolder._id})
+            return res.status(201).json({
+                success: true,
+                data: movedFile
+            })
+        }
 
     } catch (e) {
         if (e.name === 'ValidationError') {
