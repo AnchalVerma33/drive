@@ -16,7 +16,7 @@ const FolderSchema=mongoose.Schema({
                 type:String,
                 required:true
             },
-            file:{
+            folder:{
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
                 ref: 'Folder',

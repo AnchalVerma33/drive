@@ -5,13 +5,17 @@ const createFile = async (req, res) => {
     try {
         const { name, link, parentFolder } = req.body
         const user = req.user._id
-        console.log(user)
         const folder = await Folder.findById(parentFolder)
         const prevArray = folder.childFiles
-        if(prevArray.include({name: name})){
-            return res.stats(401).json({
+        let flag=0
+        prevArray.forEach(element => {
+            if(element.name===name)
+                flag=1
+        });
+        if(flag){
+            return res.status(400).json({
                 status: false,
-                message: 'file with that name already exists'
+                message: 'File with that name already exists'
              })
         }
         else {
@@ -24,7 +28,6 @@ const createFile = async (req, res) => {
                 }
                 const newArray = [...prevArray, newFile]
                 const updatedFolder = await Folder.findByIdAndUpdate(parentFolder, { childFiles: newArray })
-                console.log(updatedFolder)
             
                 return res.status(201).json({
                     success: true,
@@ -62,20 +65,38 @@ const copyFile = async (req, res) => {
         const folder = await Folder.findById(folderId)
 
         const prevArray = folder.childFiles
-        const newFile = {
-            name: file.name,
-            File: file._id
+    
+        let flag=0
+        prevArray.forEach(element => {
+            if(element.name===file.name)
+                flag=1
+        });
+        if(flag){
+            return res.status(400).json({
+                status: false,
+                message: 'File with that name already exists'
+            })
+        }else{
+            const newFile=await File.create({
+                name:file.name,
+                link:file.link,
+                parentFolder:folderId,
+                user:user
+            })
+    
+            const newFileItem = {
+                name: newFile.name,
+                file: newFile._id
+            }
 
+            const newArray = [...prevArray, newFileItem]
+            const updatedFolder = await Folder.findByIdAndUpdate(folderId, { childFiles: newArray })
+    
+            return res.status(201).json({
+                success: true,
+                data: newFile
+            })
         }
-        const newArray = [...prevArray, newFile]
-        const updatedFolder = await Folder.findByIdAndUpdate(folderId, { childFiles: newArray })
-        console.log(updatedFolder)
-        return res.status(201).json({
-            success: true,
-            data: file
-        })
-        
-
     } catch (e) {
         if (e.name === 'ValidationError') {
             console.log(e)
@@ -107,15 +128,18 @@ const moveFile = async (req, res) => {
         const parentFolder = file.parentFolder
         const folder = await Folder.findById(parentFolder)
         const childFiles = folder.childFiles
-        for (let i = 0; i < childFiles.length; i++){
-            if (childFiles[i].File == moveFileId) {
-                childFiles.splice(i, 1)
-                break;
-            }
-        }
+        // for (let i = 0; i < childFiles.length; i++){
+        //     if (childFiles[i].File == moveFileId) {
+        //         childFiles.splice(i, 1)
+        //         break;
+        //     }
+        // }
+        const newChildFiles=childFiles.filter((obj)=>{
+            console.log(typeof String(obj.file))
+            console.log(typeof String(fileId))
+            return String(obj.file)!==String(fileId)})
         // Now Update ParentFolder
-        const updatedParent = await Folder.findByIdAndUpdate(parentFolder,{childFiles: childFiles})
-        console.log("Parent Folder Updated" + updatedParent)
+        const updatedParent = await Folder.findByIdAndUpdate(parentFolder,{childFiles: newChildFiles})
         // =====================================================================
         // Move File Logic
         // Now Move File To New Folder's Child Array
@@ -123,14 +147,15 @@ const moveFile = async (req, res) => {
         const prevFiles = newFolder.childFiles
         const newFile = {
             name: moveFileName,
-            File: moveFileId
+            file: moveFileId
         }
         const updatedFiles = [...prevFiles, newFile]
         // Now make an update
         const updatedFolder = await Folder.findByIdAndUpdate(folderId,{childFiles: updatedFiles})
+        const movedFile=await File.findByIdAndUpdate(fileId,{parentFolder:updatedFolder._id})
         return res.status(201).json({
             success: true,
-            data: updatedFolder
+            data: movedFile
         })
 
     } catch (e) {
