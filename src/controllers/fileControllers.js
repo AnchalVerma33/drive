@@ -143,8 +143,6 @@ const moveFile = async (req, res) => {
             const parentFolder = file.parentFolder
             
             const newChildFiles=childFiles.filter((obj)=>{
-                console.log(typeof String(obj.file))
-                console.log(typeof String(fileId))
                 return String(obj.file)!==String(fileId)})
             // Now Update ParentFolder
             const updatedParent = await Folder.findByIdAndUpdate(parentFolder,{childFiles: newChildFiles})
@@ -189,11 +187,10 @@ const moveFile = async (req, res) => {
 const deleteFile = async (req, res) => {
     try {
         const fileId = req.params.id
-        const parentFolder = req.body.parentFolder
-        // Delete File from File Collection
-        const fileData = await File.findOneAndDelete(fileId)
-        // Delete From Parent Folder Child List Array
-        const folder = await Folder.findById(parentFolder)
+        const fileTobeRemoved=await File.findById(fileId)
+        console.log(fileTobeRemoved)
+        console.log(fileTobeRemoved.parentFolder)
+        const folder = await Folder.findById(fileTobeRemoved.parentFolder)
         const childFiles = folder.childFiles
         for (let i = 0; i < childFiles.length; i++){
             // In this Case Slice and Remove one element from childList array
@@ -201,7 +198,8 @@ const deleteFile = async (req, res) => {
                 childFiles.splice(i,1)
             }
         }
-        const updatedFolder = await Folder.findOneAndUpdate(parentFolder,{childFiles: childFiles})
+        const updatedFolder = await Folder.findOneAndUpdate(fileTobeRemoved.parentFolder,{childFiles: childFiles})
+        await fileTobeRemoved.remove()
         return res.status(201).json({
             status: true,
             data: updatedFolder

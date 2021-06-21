@@ -155,9 +155,35 @@ const moveFolder=async(req,res)=>{
 
 const deleteFolder=async(req,res)=>{
     try{
+        const folderTobeDeletedId=req.params.id
+        const folderTobeDeleted=await Folder.findById(folderTobeDeletedId)
+        const parentFolderId=folderTobeDeleted.parentFolder
+        const parentFolder=await Folder.findById(parentFolderId)
 
+        const childFolder=parentFolder.childFolder
+        parentFolder.childFolder=childFolder.filter((obj)=>String(obj.folder)!==String(folderTobeDeletedId))
+        await parentFolder.save()
+        await folderTobeDeleted.remove()
+        return res.status(201).json({
+            success: true,
+            data:'Successfully deleted'
+        })
     }catch(e){
-        
+        if (e.name === 'ValidationError') {
+            console.log(e)
+            const messages = Object.values(e.errors).map(val => val.message)
+            res.status(400).json({
+                success: false,
+                error: messages
+            })
+
+        } else {
+            console.log(`Error occured ${e}`)
+            return res.status(500).json({
+                success: false,
+                error: `${e}`
+            })
+        }
     }
 }
 
