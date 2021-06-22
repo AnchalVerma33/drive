@@ -185,26 +185,21 @@ const moveFile = async (req, res) => {
 }
 
 const deleteFile = async (req, res) => {
-    try {
-        const fileId = req.params.id
-        const fileTobeRemoved=await File.findById(fileId)
-        console.log(fileTobeRemoved)
-        console.log(fileTobeRemoved.parentFolder)
-        const folder = await Folder.findById(fileTobeRemoved.parentFolder)
-        const childFiles = folder.childFiles
-        for (let i = 0; i < childFiles.length; i++){
-            // In this Case Slice and Remove one element from childList array
-            if (fileId == childFiles[i].File) {
-                childFiles.splice(i,1)
-            }
-        }
-        const updatedFolder = await Folder.findOneAndUpdate(fileTobeRemoved.parentFolder,{childFiles: childFiles})
-        await fileTobeRemoved.remove()
+    try{
+        const fileTobeDeletedId=req.params.id
+        const fileTobeDeleted=await File.findById(fileTobeDeletedId)
+        const parentFolderId=fileTobeDeleted.parentFolder
+        const parentFolder=await Folder.findById(parentFolderId)
+
+        const childFiles=parentFolder.childFiles
+        parentFolder.childFiles=childFiles.filter((obj)=>String(obj.file)!==String(fileTobeDeletedId))
+        await parentFolder.save()
+        await fileTobeDeleted.remove()
         return res.status(201).json({
-            status: true,
-            data: updatedFolder
+            success: true,
+            data:'Successfully deleted'
         })
-    } catch (e) {
+    }catch(e){
         if (e.name === 'ValidationError') {
             console.log(e)
             const messages = Object.values(e.errors).map(val => val.message)
