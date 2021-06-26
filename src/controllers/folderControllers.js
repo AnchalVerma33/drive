@@ -187,4 +187,21 @@ const deleteFolder=async(req,res)=>{
     }
 }
 
-module.exports={createFolder,copyFolder,moveFolder,deleteFolder}
+const getParentFolder=async(req,res)=>{
+    try{
+        const user=req.user._id
+        
+        if(String(user)!==String(req.params.id)){
+            res.status(404).json({success:false,error:'Not authorized'})
+            return
+        }
+        const parentFolder=user
+        const folder=await Folder.findOne({user,parentFolder})
+        res.status(201).json({success:true,data:folder})
+    }catch(e){
+        console.log(e)
+        res.status(404).json({success:false,error:'Server error'})
+    }
+}
+
+module.exports={createFolder,copyFolder,moveFolder,deleteFolder,getParentFolder}

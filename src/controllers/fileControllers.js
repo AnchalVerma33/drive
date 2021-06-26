@@ -16,7 +16,7 @@ const createFile = async (req, res) => {
             return res.status(400).json({
                 status: false,
                 message: 'File with that name already exists'
-             })
+            })
         }
         else {
                 // Creating File
