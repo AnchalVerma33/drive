@@ -15,7 +15,7 @@ const createFile = async (req, res) => {
         if(flag){
             return res.status(400).json({
                 status: false,
-                message: 'File with that name already exists'
+                error: 'File with that name already exists'
             })
         }
         else {
@@ -27,7 +27,9 @@ const createFile = async (req, res) => {
                     file:file._id
                 }
                 const newArray = [...prevArray, newFile]
-                const updatedFolder = await Folder.findByIdAndUpdate(parentFolder, { childFiles: newArray })
+                const folderTobeUpdate=await Folder.findById(parentFolder)
+                folderTobeUpdate.childFiles=newArray
+                const updatedFolder = await folderTobeUpdate.save()
             
                 return res.status(201).json({
                     success: true,
