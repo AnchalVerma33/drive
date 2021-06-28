@@ -210,17 +210,22 @@ const getFolder=async (req,res)=>{
         const user=req.user._id
         const folder=await Folder.findById(id)
         if(String(folder.user)!==String(user)){
-            res.status(200).json({
+            return res.status(200).json({
                 success:false,
                 error:'Not authorized'
             })
         }
         if(!user){
-            res.status(404).json({
+            return res.status(200).json({
                 success:false,
                 error:'Folder not found'
             })
         }
+        res.send({
+            success:true,
+            data:folder
+        })
+    
     }catch(e){
         console.log(e)
         res.status(404).json({success:false,error:'Server error'})
