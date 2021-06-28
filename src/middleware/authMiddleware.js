@@ -30,7 +30,7 @@ const protect = async (req, res, next) => {
         }else{
             message='Authorization Problem'
         }
-        res.json({success:false,message:message})
+        res.json({success:false,error:message})
         res.status(401)
     }
 }
