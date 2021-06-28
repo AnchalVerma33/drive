@@ -204,4 +204,27 @@ const getParentFolder=async(req,res)=>{
     }
 }
 
-module.exports={createFolder,copyFolder,moveFolder,deleteFolder,getParentFolder}
+const getFolder=async (req,res)=>{
+    try{
+        const {id}=req.params
+        const user=req.user._id
+        const folder=await Folder.findById(id)
+        if(String(folder.user)!==String(user)){
+            res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+        if(!user){
+            res.status(404).json({
+                success:false,
+                error:'Folder not found'
+            })
+        }
+    }catch(e){
+        console.log(e)
+        res.status(404).json({success:false,error:'Server error'})
+    }
+}
+
+module.exports={createFolder,copyFolder,moveFolder,deleteFolder,getParentFolder,getFolder}
