@@ -159,7 +159,12 @@ const deleteFolder=async(req,res)=>{
         const folderTobeDeleted=await Folder.findById(folderTobeDeletedId)
         const parentFolderId=folderTobeDeleted.parentFolder
         const parentFolder=await Folder.findById(parentFolderId)
-
+        if(String(folderTobeDeleted.user)!==String(req.user._id)){
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
         const childFolder=parentFolder.childFolder
         parentFolder.childFolder=childFolder.filter((obj)=>String(obj.folder)!==String(folderTobeDeletedId))
         await parentFolder.save()
