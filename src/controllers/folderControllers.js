@@ -228,7 +228,7 @@ const getFolder=async (req,res)=>{
     
     }catch(e){
         console.log(e)
-        res.status(200).json({success:false,error:'Server error'})
+        res.status(404).json({success:false,error:'Server error'})
     }
 }
 
