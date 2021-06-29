@@ -109,6 +109,13 @@ const moveFolder=async(req,res)=>{
         const destinationParentFolder=await Folder.findById(destinationParentFolderId)
         const currentParentFolder=await Folder.findById(folderToBeMoved.parentFolder)
 
+        if(String(folderTobeMovedId.user)!==String(req.user._id)){
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
         let flag=0
         destinationParentFolder.childFolder.forEach(folder => {
             if(folder.name===folderToBeMoved.name)
