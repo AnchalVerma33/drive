@@ -144,7 +144,15 @@ const moveFile = async (req, res) => {
         // =======================================================================
         // Parent Folder of File
         
+
         const folder = await Folder.findById(folderId)
+        if(String(req.user._id)!==String(folder.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
         const childFiles = folder.childFiles
         let flag=0
         childFiles.forEach(element => {
