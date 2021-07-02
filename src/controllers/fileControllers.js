@@ -217,6 +217,14 @@ const deleteFile = async (req, res) => {
         const parentFolderId=fileTobeDeleted.parentFolder
         const parentFolder=await Folder.findById(parentFolderId)
 
+        if(String(req.user._id)!==String(parentFolder.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
         const childFiles=parentFolder.childFiles
         parentFolder.childFiles=childFiles.filter((obj)=>String(obj.file)!==String(fileTobeDeletedId))
         await parentFolder.save()
