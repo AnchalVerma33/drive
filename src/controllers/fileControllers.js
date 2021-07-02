@@ -12,7 +12,7 @@ const createFile = async (req, res) => {
             if(element.name===name)
                 flag=1
         });
-        if(String(user)!==String(parentFolder.user))
+        if(String(user)!==String(folder.user))
         {
             return res.status(200).json({
                 success:false,
