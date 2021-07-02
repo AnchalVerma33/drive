@@ -12,6 +12,13 @@ const createFile = async (req, res) => {
             if(element.name===name)
                 flag=1
         });
+        if(String(user)!==String(parentFolder.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
         if(flag){
             return res.status(200).json({
                 status: false,
