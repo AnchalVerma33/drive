@@ -73,6 +73,15 @@ const copyFile = async (req, res) => {
         // finding folder where to copy file
         const folder = await Folder.findById(folderId)
 
+        
+        if(String(user)!==String(folder.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
         const prevArray = folder.childFiles
     
         let flag=0
