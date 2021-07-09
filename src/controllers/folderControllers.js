@@ -226,8 +226,15 @@ const getParentFolder=async(req,res)=>{
 const getFolder=async (req,res)=>{
     try{
         const {id}=req.params
+        console.log(id)
         const user=req.user._id
         const folder=await Folder.findById(id)
+        if(!folder){
+            return res.status(200).json({
+                success:false,
+                error:'No Such folder found'
+            })
+        }
         if(String(folder.user)!==String(user)){
             return res.status(200).json({
                 success:false,
