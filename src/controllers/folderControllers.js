@@ -244,7 +244,7 @@ const getFolder=async (req,res)=>{
         if(!user){
             return res.status(200).json({
                 success:false,
-                error:'Folder not found'
+                error:'Not authorized'
             })
         }
         res.send({
