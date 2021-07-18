@@ -31,7 +31,8 @@ const createFile = async (req, res) => {
                 /* Finding Parent Folder and pushing file to Child Files Array */
                 const newFile = {
                     name:file.name,
-                    file:file._id
+                    file:file._id,
+                    link:file.link
                 }
                 const newArray = [...prevArray, newFile]
                 const folderTobeUpdate=await Folder.findById(parentFolder)
@@ -104,7 +105,8 @@ const copyFile = async (req, res) => {
     
             const newFileItem = {
                 name: newFile.name,
-                file: newFile._id
+                file: newFile._id,
+                link:newFile.file
             }
 
             const newArray = [...prevArray, newFileItem]
@@ -141,6 +143,7 @@ const moveFile = async (req, res) => {
         const file = await File.findById(fileId)
         const moveFileId = file._id
         const moveFileName = file.name
+        const moveFileLink=file.link
         // =======================================================================
         // Parent Folder of File
         
@@ -179,7 +182,8 @@ const moveFile = async (req, res) => {
             const prevFiles = newFolder.childFiles
             const newFile = {
                 name: moveFileName,
-                file: moveFileId
+                file: moveFileId,
+                link:moveFileLink
             }
             const updatedFiles = [...prevFiles, newFile]
             // Now make an update

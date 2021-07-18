@@ -33,6 +33,10 @@ const FolderSchema=mongoose.Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
                 ref: 'File',
+            },
+            link:{
+                type:String,
+                required:true
             }
         }
     ],
