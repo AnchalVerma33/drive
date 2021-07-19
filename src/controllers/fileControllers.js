@@ -258,6 +258,8 @@ const deleteFile = async (req, res) => {
 
 const recycled=async(req,res)=>{
     try{
+        const user=req.user._id
+
         const {id}=req.params
         if(!id){
             return res.status(200).json({
@@ -265,7 +267,23 @@ const recycled=async(req,res)=>{
                 error:'Cant detect id'
             })
         }
+
         const file=await File.findById(id)
+
+        if(String(user)!==String(file.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
+        if(file.isrecycled){
+            return res.status(200).json({
+                success:false,
+                error:'Already in recycle bin'
+            })
+        }
         file.isrecycled=true
         file.recycledDate=Date.now()
         const savedFile=await file.save()
@@ -282,4 +300,48 @@ const recycled=async(req,res)=>{
     }
 }
 
-module.exports = { createFile, copyFile, moveFile, deleteFile ,recycled}
+const removeFromRecycle=async(req,res)=>{
+    try{
+        const {id}=req.params
+        
+        const user=req.user._id
+        
+        if(!id){
+            return res.status(200).json({
+                success:false,
+                error:'Cant detect id'
+            })
+        }
+        const file=await File.findById(id)
+
+        if(String(user)!==String(file.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
+        if(!file.isrecycled){
+            return res.status(200).json({
+                success:false,
+                error:'File is not in recycle bin'
+            })
+        }
+        file.isrecycled=true
+        file.recycledDate=Date.now()
+        const savedFile=await file.save()
+        res.status(200).json({
+            success:true,
+            data:savedFile
+        })
+    }catch(e){
+        console.log(e)
+        return res.status(500).json({
+            success:false,
+            error:'Server error'
+        })
+    }
+}
+
+module.exports = { createFile, copyFile, moveFile, deleteFile ,recycled,removeFromRecycle}
