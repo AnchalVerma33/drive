@@ -20,7 +20,9 @@ const createFolder=async(req,res)=>{
                 const folder=await Folder.create({name,parentFolder,childFolder:[],childFiles:[],user:req.user._id})
                 const newFolder = {
                     name:folder.name,
-                    folder:folder._id
+                    folder:folder._id,
+                    isrecycled:folder.isrecycled,
+                    recycledDate:folder.recycledDate
                 }
                 const newArray = [...prevArray, newFolder]
                 const updatedFolder = await Folder.findByIdAndUpdate(parentFolder, { childFolder: newArray })
@@ -84,7 +86,12 @@ const copyFolder=async(req,res)=>{
             }
             const newFolder=await Folder.create(obj)
             const childFolder=destinationParentFolder.childFolder
-            await Folder.findByIdAndUpdate(destinationParentFolderId,{childFolder:[...childFolder,{name:folderTobeCopy.name,folder:folderToBeCopyId}]})
+            await Folder.findByIdAndUpdate(destinationParentFolderId,{childFolder:[...childFolder,{
+                name:folderTobeCopy.name,
+                folder:folderToBeCopyId,
+                isrecycled:folderTobeCopy.isrecycled,
+                recycledDate:folderTobeCopy.recycledDate
+            }]})
             return res.status(201).json({
                 success: true,
                 data:newFolder
@@ -138,7 +145,12 @@ const moveFolder=async(req,res)=>{
 
             const childFolder=destinationParentFolder.childFolder
 
-            await Folder.findByIdAndUpdate(destinationParentFolderId,{childFolder:[...childFolder,{name:folderToBeMoved.name,folder:folderTobeMovedId}]})
+            await Folder.findByIdAndUpdate(destinationParentFolderId,{childFolder:[...childFolder,{
+                name:folderToBeMoved.name,
+                folder:folderTobeMovedId,
+                isrecycled:folderToBeMoved.isrecycled,
+                recycledDate:folderToBeMoved.recycledDate
+            }]})
 
             const oldParentFolder=await Folder.findByIdAndUpdate(folderToBeMoved.parentFolder,{childFolder:newCurrentParentFolderArray})
             const file=await Folder.findByIdAndUpdate(req.params.id,{parentFolder:destinationParentFolderId})
@@ -289,6 +301,9 @@ const recycled=async(req,res)=>{
         folder.isrecycled=true
         folder.recycledDate=Date.now()
         const savedFolder=await folder.save()
+
+        // Set all folder and files to be recycled
+
         res.status(200).json({
             success:true,
             data:savedFolder
@@ -333,6 +348,10 @@ const removeFromRecycle=async(req,res)=>{
         folder.isrecycled=true
         folder.recycledDate=Date.now()
         const savedFolder=await folder.save()
+
+        
+        // Set all folder and files to removed from recycled
+
         res.status(200).json({
             success:true,
             data:savedFolder

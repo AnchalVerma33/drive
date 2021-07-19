@@ -20,6 +20,14 @@ const FolderSchema=mongoose.Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
                 ref: 'Folder',
+            },
+            isrecycled:{
+                type:Boolean,
+                require:true,
+                default:false
+            },
+            recycledDate:{
+                type:Date
             }
         }
     ],
@@ -37,6 +45,14 @@ const FolderSchema=mongoose.Schema({
             link:{
                 type:String,
                 required:true
+            },
+            isrecycled:{
+                type:Boolean,
+                require:true,
+                default:false
+            },
+            recycledDate:{
+                type:Date
             }
         }
     ],
