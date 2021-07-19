@@ -258,4 +258,93 @@ const getFolder=async (req,res)=>{
     }
 }
 
-module.exports={createFolder,copyFolder,moveFolder,deleteFolder,getParentFolder,getFolder}
+const recycled=async(req,res)=>{
+    try{
+        const user=req.user._id
+
+        const {id}=req.params
+        if(!id){
+            return res.status(200).json({
+                success:false,
+                error:'Cant detect id'
+            })
+        }
+
+        const folder=await Folder.findById(id)
+
+        if(String(user)!==String(folder.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
+        if(folder.isrecycled){
+            return res.status(200).json({
+                success:false,
+                error:'Already in recycle bin'
+            })
+        }
+        folder.isrecycled=true
+        folder.recycledDate=Date.now()
+        const savedFolder=await folder.save()
+        res.status(200).json({
+            success:true,
+            data:savedFolder
+        })
+    }catch(e){
+        console.log(e)
+        return res.status(500).json({
+            success:false,
+            error:'Server error'
+        })
+    }
+}
+
+const removeFromRecycle=async(req,res)=>{
+    try{
+        const {id}=req.params
+        
+        const user=req.user._id
+        
+        if(!id){
+            return res.status(200).json({
+                success:false,
+                error:'Cant detect id'
+            })
+        }
+        const folder=await Folder.findById(id)
+
+        if(String(user)!==String(folder.user))
+        {
+            return res.status(200).json({
+                success:false,
+                error:'Not authorized'
+            })
+        }
+
+        if(!folder.isrecycled){
+            return res.status(200).json({
+                success:false,
+                error:'Folder is not in recycle bin'
+            })
+        }
+        folder.isrecycled=true
+        folder.recycledDate=Date.now()
+        const savedFolder=await folder.save()
+        res.status(200).json({
+            success:true,
+            data:savedFolder
+        })
+    }catch(e){
+        console.log(e)
+        return res.status(500).json({
+            success:false,
+            error:'Server error'
+        })
+    }
+}
+
+
+module.exports={createFolder,copyFolder,moveFolder,deleteFolder,getParentFolder,getFolder,recycled,removeFromRecycle}
