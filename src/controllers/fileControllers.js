@@ -256,4 +256,30 @@ const deleteFile = async (req, res) => {
     }
 }
 
-module.exports = { createFile, copyFile, moveFile, deleteFile }
+const recycled=async(req,res)=>{
+    try{
+        const {id}=req.params
+        if(!id){
+            return res.status(200).json({
+                success:false,
+                error:'Cant detect id'
+            })
+        }
+        const file=await File.findById(id)
+        file.isrecycled=true
+        file.recycledDate=Date.now()
+        const savedFile=await file.save()
+        res.status(200).json({
+            success:true,
+            data:savedFile
+        })
+    }catch(e){
+        console.log(e)
+        return res.status(500).json({
+            success:false,
+            error:'Server error'
+        })
+    }
+}
+
+module.exports = { createFile, copyFile, moveFile, deleteFile ,recycled}

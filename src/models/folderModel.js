@@ -44,6 +44,14 @@ const FolderSchema=mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User',
+    },
+    isrecycled:{
+        type:Boolean,
+        require:true,
+        default:false
+    },
+    recycledDate:{
+        type:Date
     }
 },{
     timestamps:true
