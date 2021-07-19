@@ -1,7 +1,31 @@
+const File = require("../models/fileModel")
 const Folder = require("../models/folderModel")
 
 
-
+const deleteFolderRecursion=async(id)=>{
+    return new Promise(async(resolve,reject)=>{    
+        try{
+            // console.log('Function called')
+            const folder=await Folder.findById(id)
+            const childrenFolders=folder.childFolder
+            const childrenFiles=folder.childFiles
+            for(let i=0;i<childrenFolders.length;i++){
+                const folderId=childrenFolders[i].folder
+                await deleteFolderRecursion(folderId)
+            }
+            for(let i=0;i<childrenFiles.length;i++){
+                const fileId=childrenFolders[i].file
+                const file=await File.findById(fileId)
+                await file.remove()
+            }
+            await folder.remove()
+            resolve('success')
+        }catch(e){
+            console.log(e)
+            reject(e)
+        }
+    })
+}
 
 
 const createFolder=async(req,res)=>{
@@ -198,8 +222,9 @@ const deleteFolder=async(req,res)=>{
         const childFolder=parentFolder.childFolder
         parentFolder.childFolder=childFolder.filter((obj)=>String(obj.folder)!==String(folderTobeDeletedId))
         await parentFolder.save()
-        await folderTobeDeleted.remove()
-        return res.status(201).json({
+        await deleteFolderRecursion(folderTobeDeletedId)
+
+        res.status(201).json({
             success: true,
             data:'Successfully deleted'
         })
