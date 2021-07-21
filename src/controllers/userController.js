@@ -96,10 +96,10 @@ const recent = async (req, res) => {
 			});
 		}
 		const folders = await Folder.find({ user: user }).sort({
-			updatedAt: "desc",
+			updatedAt: "asc",
 		});
 		const files = await File.find({ user: user }).sort({
-			updatedAt: "desc",
+			updatedAt: "asc",
 		});
 		if (!folders || !files) {
 			return res.status(200).json({
