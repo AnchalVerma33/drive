@@ -168,7 +168,7 @@ const updateUserProfile = async (req, res) => {
 const getUser = async (req, res) => {
 	try {
 		const userId = req.user._id;
-		const user = await User.findById(userId);
+		const user = await User.findById(userId).select("-password");
 		if (!user) {
 			res.status(200).json({
 				success: false,
