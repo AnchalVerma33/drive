@@ -132,20 +132,29 @@ const recent = async (req, res) => {
 const updateUserProfile = async (req, res) => {
 	try {
 		const { name, email, password, imgurl } = req.body;
-		const user = req.user._id;
-		const userData = await User.findOneAndUpdate(
-			{ _id: user },
-			{
-				name: name,
-				email: email,
-				password: password,
-				imgurl: imgurl,
-			}
-		);
+		const userId = req.user._id;
+
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res.status(200).json({
+				success: false,
+				error: "No such user found",
+			});
+		}
+
+		user.name = name || user.name;
+		user.email = email || user.email;
+		user.imgurl = imgurl || user.imgurl;
+		if (password) {
+			user.password = password;
+		}
+
+		const savedUser = await user.save();
 
 		return res.status(201).json({
 			success: true,
-			data: userData,
+			data: savedUser,
 		});
 	} catch (e) {
 		console.log(e);
@@ -155,4 +164,28 @@ const updateUserProfile = async (req, res) => {
 		});
 	}
 };
-module.exports = { authUser, registerUser, recent, updateUserProfile };
+
+const getUser = async (req, res) => {
+	try {
+		const userId = req.user._id;
+		const user = await User.findById(userId);
+		if (!user) {
+			res.status(200).json({
+				success: false,
+				error: "No such user found",
+			});
+		}
+		res.status(200).json({
+			success: true,
+			data: user,
+		});
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({
+			success: false,
+			error: "Server error",
+		});
+	}
+};
+
+module.exports = { authUser, registerUser, recent, updateUserProfile, getUser };
