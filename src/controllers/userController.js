@@ -39,9 +39,6 @@ const authUser = async (req, res) => {
 const registerUser = async (req, res) => {
 	try {
 		const { name, email, password } = req.body;
-		// default avatar
-		const imgurl =
-			"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAzw8Q6UOf1CL3h4y3EkHM0qCE47S_-AyxAQ&usqp=CAU";
 		const userExists = await User.findOne({ email });
 		if (userExists) {
 			throw new Error("User already exists");
@@ -50,7 +47,6 @@ const registerUser = async (req, res) => {
 			name,
 			email,
 			password,
-			imgurl,
 		});
 		if (user) {
 			const headFolder = await Folder.create({
