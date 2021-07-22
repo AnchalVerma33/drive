@@ -15,6 +15,7 @@ const authUser = async (req, res) => {
 					_id: user._id,
 					name: user.name,
 					email: user.email,
+					imgurl: user.imgurl,
 					token: generateToken(user._id),
 				},
 			});
@@ -38,6 +39,8 @@ const authUser = async (req, res) => {
 const registerUser = async (req, res) => {
 	try {
 		const { name, email, password } = req.body;
+		// default avatar
+		const imgurl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAzw8Q6UOf1CL3h4y3EkHM0qCE47S_-AyxAQ&usqp=CAU';
 		const userExists = await User.findOne({ email });
 		if (userExists) {
 			throw new Error("User already exists");
@@ -46,6 +49,7 @@ const registerUser = async (req, res) => {
 			name,
 			email,
 			password,
+			imgurl,
 		});
 		if (user) {
 			const headFolder = await Folder.create({
@@ -66,6 +70,7 @@ const registerUser = async (req, res) => {
 					_id: user._id,
 					name: user.name,
 					email: user.email,
+					imgurl:user.imgurl,
 					token: generateToken(user._id),
 				},
 			});
@@ -123,4 +128,28 @@ const recent = async (req, res) => {
 	}
 };
 
-module.exports = { authUser, registerUser, recent };
+const updateUserProfile = async (req, res) => {
+	try {
+		const {name,email,password,imgurl} = req.body
+		const user = req.user._id
+		const userData = await User.findOneAndUpdate({ _id: user },{
+			name:name,
+			email:email,
+			password:password,
+			imgurl:imgurl
+		})
+
+		return res.status(201).json({
+			success: true,
+			data: userData
+		});
+		
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({
+			success: false,
+			error: "Server error",
+		});
+	}
+}
+module.exports = { authUser, registerUser, recent, updateUserProfile };

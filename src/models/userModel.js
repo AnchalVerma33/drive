@@ -16,6 +16,10 @@ const UserSchema=mongoose.Schema({
     password:{
         type:String,
         required:true,
+    },
+    imgurl:{
+        type:String,
+        required:true,
     }
 },{
     timestamps:true
@@ -31,6 +35,16 @@ UserSchema.pre('save',async function(next){
     }
     const salt=await bcrypt.genSalt(10)
     this.password=await bcrypt.hash(this.password,salt)
+})
+UserSchema.pre('findOneAndUpdate', async function (next) {
+    const docToUpdate = await this.model.findOne(this.getQuery());
+    // console.log(docToUpdate,this.password)
+    // console.log(this._update)
+    // // if(!this.isModified('password')){
+    // //     next()
+    // // }
+    const salt=await bcrypt.genSalt(10)
+    this._update.password=await bcrypt.hash(this._update.password,salt)
 })
 
 UserSchema.pre('remove',async function(next){
