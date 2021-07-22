@@ -233,6 +233,12 @@ const deleteFolder = async (req, res) => {
 		const folderTobeDeletedId = req.params.id;
 		const folderTobeDeleted = await Folder.findById(folderTobeDeletedId);
 		const parentFolderId = folderTobeDeleted.parentFolder;
+		if (String(parentFolderId) === String(folderTobeDeleted.user)) {
+			return res.status(200).json({
+				success: false,
+				error: "Parent folder cannot be deleted",
+			});
+		}
 		const parentFolder = await Folder.findById(parentFolderId);
 		if (String(folderTobeDeleted.user) !== String(req.user._id)) {
 			return res.status(200).json({
