@@ -40,7 +40,8 @@ const registerUser = async (req, res) => {
 	try {
 		const { name, email, password } = req.body;
 		// default avatar
-		const imgurl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAzw8Q6UOf1CL3h4y3EkHM0qCE47S_-AyxAQ&usqp=CAU';
+		const imgurl =
+			"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAzw8Q6UOf1CL3h4y3EkHM0qCE47S_-AyxAQ&usqp=CAU";
 		const userExists = await User.findOne({ email });
 		if (userExists) {
 			throw new Error("User already exists");
@@ -70,7 +71,7 @@ const registerUser = async (req, res) => {
 					_id: user._id,
 					name: user.name,
 					email: user.email,
-					imgurl:user.imgurl,
+					imgurl: user.imgurl,
 					token: generateToken(user._id),
 				},
 			});
@@ -101,10 +102,10 @@ const recent = async (req, res) => {
 			});
 		}
 		const folders = await Folder.find({ user: user }).sort({
-			updatedAt: "asc",
+			createdAt: "asc",
 		});
 		const files = await File.find({ user: user }).sort({
-			updatedAt: "asc",
+			createdAt: "asc",
 		});
 		if (!folders || !files) {
 			return res.status(200).json({
@@ -130,20 +131,22 @@ const recent = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
 	try {
-		const {name,email,password,imgurl} = req.body
-		const user = req.user._id
-		const userData = await User.findOneAndUpdate({ _id: user },{
-			name:name,
-			email:email,
-			password:password,
-			imgurl:imgurl
-		})
+		const { name, email, password, imgurl } = req.body;
+		const user = req.user._id;
+		const userData = await User.findOneAndUpdate(
+			{ _id: user },
+			{
+				name: name,
+				email: email,
+				password: password,
+				imgurl: imgurl,
+			}
+		);
 
 		return res.status(201).json({
 			success: true,
-			data: userData
+			data: userData,
 		});
-		
 	} catch (e) {
 		console.log(e);
 		res.status(500).json({
@@ -151,5 +154,5 @@ const updateUserProfile = async (req, res) => {
 			error: "Server error",
 		});
 	}
-}
+};
 module.exports = { authUser, registerUser, recent, updateUserProfile };
