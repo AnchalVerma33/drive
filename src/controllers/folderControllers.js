@@ -26,6 +26,44 @@ const deleteFolderRecursion = async (id) => {
 	});
 };
 
+const setRecycleFolderRecursion = async (id) => {
+	console.log("Recycle recursion");
+	return new Promise(async (resolve, reject) => {
+		try {
+			const folder = await Folder.findById(id);
+			const childrenFolders = folder.childFolder;
+			const childrenFiles = folder.childFiles;
+			for (let i = 0; i < childrenFolders.length; i++) {
+				childrenFolders[i].isrecycled = true;
+				childrenFolders[i].recycledDate = Date.now();
+			}
+			for (let i = 0; i < childrenFiles.length; i++) {
+				childrenFiles[i].isrecycled = true;
+				childrenFiles[i].recycledDate = Date.now();
+			}
+			for (let i = 0; i < childrenFolders.length; i++) {
+				const folderId = childrenFolders[i].folder;
+				await setRecycleFolderRecursion(folderId);
+			}
+			for (let i = 0; i < childrenFiles.length; i++) {
+				const fileId = childrenFolders[i].file;
+				const file = await File.findById(fileId);
+				file.recycledDate = Date.now();
+				file.isrecycled = true;
+				await file.save();
+			}
+			folder.isrecycled = true;
+			folder.recycledDate = Date.now();
+			const savedFolder = await folder.save();
+			// console.log(savedFolder);
+			resolve(savedFolder);
+		} catch (e) {
+			console.log(e);
+			reject(e);
+		}
+	});
+};
+
 const createFolder = async (req, res) => {
 	try {
 		const { name, parentFolder } = req.body;
@@ -330,7 +368,13 @@ const getFolder = async (req, res) => {
 
 const recycled = async (req, res) => {
 	try {
-		const user = req.user._id;
+		const user = req.user;
+		if (!user) {
+			return res.status(200).json({
+				success: false,
+				error: "Not authorized",
+			});
+		}
 
 		const { id } = req.params;
 		if (!id) {
@@ -341,23 +385,31 @@ const recycled = async (req, res) => {
 		}
 
 		const folder = await Folder.findById(id);
+		const parentFolderId = folder.parentFolder;
+		const parentFolder = await Folder.findById(parentFolderId);
+		const childFolder = parentFolder.childFolder;
+		parentFolder.childFolder = childFolder.map((folder) => {
+			if (String(folder.folder) === String(id)) {
+				return {
+					name: folder.name,
+					folder: folder.folder,
+					isrecycled: true,
+					recycledDate: Date.now(),
+				};
+			} else {
+				return folder;
+			}
+		});
+		await parentFolder.save();
 
-		if (String(user) !== String(folder.user)) {
+		if (String(user._id) !== String(folder.user)) {
 			return res.status(200).json({
 				success: false,
 				error: "Not authorized",
 			});
 		}
 
-		if (folder.isrecycled) {
-			return res.status(200).json({
-				success: false,
-				error: "Already in recycle bin",
-			});
-		}
-		folder.isrecycled = true;
-		folder.recycledDate = Date.now();
-		const savedFolder = await folder.save();
+		const savedFolder = await setRecycleFolderRecursion(id);
 
 		// Set all folder and files to be recycled
 
