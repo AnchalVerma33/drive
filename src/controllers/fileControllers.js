@@ -273,7 +273,7 @@ const recycled = async (req, res) => {
 
 		const parentFolderId = file.parentFolder;
 		const parentFolder = await Folder.findById(parentFolderId);
-		const childFiles = parentFolder.childFolder;
+		const childFiles = parentFolder.childFiles;
 		parentFolder.childFiles = childFiles.map((file) => {
 			if (String(file.file) === String(id)) {
 				return {
