@@ -286,7 +286,7 @@ const recycled = async (req, res) => {
 				return file;
 			}
 		});
-
+		await parentFolder.save();
 		file.isrecycled = true;
 		file.recycledDate = Date.now();
 		const savedFile = await file.save();
