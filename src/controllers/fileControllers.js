@@ -279,6 +279,7 @@ const recycled = async (req, res) => {
 				return {
 					name: file.name,
 					file: file.file,
+					link: file.link,
 					isrecycled: true,
 					recycledDate: Date.now(),
 				};
