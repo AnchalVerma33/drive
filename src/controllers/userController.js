@@ -125,6 +125,50 @@ const recent = async (req, res) => {
 	}
 };
 
+const recycleBin = async (req, res) => {
+	try {
+		const user = req.user;
+		if (!user) {
+			return res.status(200).json({
+				success: false,
+				error: "Not authorised",
+			});
+		}
+		const folders = await Folder.find({
+			user: user._id,
+			isrecycled: true,
+		}).sort({
+			recycledDate: "asc",
+		});
+
+		const files = await File.find({
+			user: user._id,
+			isrecycled: true,
+		}).sort({
+			recycledDate: "asc",
+		});
+		if (!folders || !files) {
+			return res.status(200).json({
+				success: false,
+				error: "Error in fetching data",
+			});
+		}
+		res.status(200).json({
+			success: true,
+			data: {
+				files: files,
+				folders: folders,
+			},
+		});
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({
+			success: false,
+			error: "Server error",
+		});
+	}
+};
+
 const updateUserProfile = async (req, res) => {
 	try {
 		const { name, email, password, imgurl } = req.body;
@@ -184,4 +228,11 @@ const getUser = async (req, res) => {
 	}
 };
 
-module.exports = { authUser, registerUser, recent, updateUserProfile, getUser };
+module.exports = {
+	authUser,
+	registerUser,
+	recent,
+	updateUserProfile,
+	getUser,
+	recycleBin,
+};
