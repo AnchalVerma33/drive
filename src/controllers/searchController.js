@@ -21,12 +21,23 @@ const searchByLetter = async (req, res) => {
 			if (queryString == item.name.substr(0, queryString.length)) {
 				data.push(item);
 			}
-		});
-		console.log("data", data);
+        });
+        // Folder Data 
+        const folderData = await Folder.find({user: userID})
+        let data1 = [];
+        folderData.map((item) => {
+			if (queryString == item.name.substr(0, queryString.length)) {
+				data1.push(item);
+			}
+        });
+
+        console.log("data", data);
+        console.log("folder", data1);
 		res.status(201).json({
 			success: true,
 			message: "Successfully Request Made",
-			data: data,
+            data: data,
+            folderdata: data1,
 		});
 	} catch (e) {
 		if (e.name === "ValidationError") {
