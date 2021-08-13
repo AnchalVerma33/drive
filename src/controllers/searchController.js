@@ -32,7 +32,7 @@ const searchByLetter = async (req, res) => {
 		});
 
 		let obj = {
-			data: fileData,
+			fileData: fileData,
 			folderdata: folderData,
 		};
 
