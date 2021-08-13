@@ -5,6 +5,6 @@ const { searchByLetter } = require("../controllers/searchController");
 const cache = require("../middleware/cachingMiddleware");
 
 // Search Route
-router.route("/:query").get(protect, searchByLetter);
+router.route("/:query").get(protect, cache, searchByLetter);
 
 module.exports = router;

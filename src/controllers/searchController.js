@@ -40,8 +40,10 @@ const searchByLetter = async (req, res) => {
 		res.status(201).json({
 			success: true,
 			message: "Successfully Request Made",
-			data: fileData,
-			folderdata: folderData,
+			data: {
+				fileData: fileData,
+				folderData: folderData,
+			},
 		});
 	} catch (e) {
 		if (e.name === "ValidationError") {
