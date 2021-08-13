@@ -1,11 +1,11 @@
 const File = require("../models/fileModel");
 const Folder = require("../models/folderModel");
 const User = require("../models/userModel");
+const redisClient = require("../redis/redisServer");
 
 const searchByLetter = async (req, res) => {
 	try {
 		const queryString = req.params.query;
-		console.log(queryString);
 		const user = req.user;
 		if (!user) {
 			return res.status(401).send({
@@ -15,29 +15,33 @@ const searchByLetter = async (req, res) => {
 		}
 		const userID = user._id;
 
-		const fileData = await File.find({ user: userID });
-		let data = [];
-		fileData.map((item) => {
+		const files = await File.find({ user: userID });
+		let fileData = [];
+		files.map((item) => {
 			if (queryString == item.name.substr(0, queryString.length)) {
-				data.push(item);
+				fileData.push(item);
 			}
-        });
-        // Folder Data 
-        const folderData = await Folder.find({user: userID})
-        let data1 = [];
-        folderData.map((item) => {
+		});
+		// Folder Data
+		const folders = await Folder.find({ user: userID });
+		let folderData = [];
+		folders.map((item) => {
 			if (queryString == item.name.substr(0, queryString.length)) {
-				data1.push(item);
+				folderData.push(item);
 			}
-        });
+		});
 
-        console.log("data", data);
-        console.log("folder", data1);
+		let obj = {
+			data: fileData,
+			folderdata: folderData,
+		};
+
+		redisClient.setex(queryString + userID, 7200, JSON.stringify(obj));
 		res.status(201).json({
 			success: true,
 			message: "Successfully Request Made",
-            data: data,
-            folderdata: data1,
+			data: fileData,
+			folderdata: folderData,
 		});
 	} catch (e) {
 		if (e.name === "ValidationError") {
